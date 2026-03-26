@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat</title>
+<title>ENet Chat</title>
 
 <style>
 body {
@@ -12,6 +12,7 @@ body {
   background: #ece5dd;
 }
 
+/* LOGIN */
 #login {
   display: flex;
   flex-direction: column;
@@ -36,20 +37,33 @@ body {
   font-weight: bold;
 }
 
+/* CHAT */
 #chat {
   display: none;
   height: 100vh;
-  display: flex;
   flex-direction: column;
 }
 
+/* TOPO */
 #topo {
   background: #075e54;
   color: white;
   padding: 15px;
   font-weight: bold;
+  display: flex;
+  justify-content: space-between;
 }
 
+#trocar {
+  font-size: 12px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+/* MENSAGENS */
 #messages {
   flex: 1;
   overflow-y: auto;
@@ -58,11 +72,24 @@ body {
   flex-direction: column;
 }
 
+/* MENSAGEM */
 .msg {
   max-width: 70%;
   padding: 10px;
   margin: 5px 0;
   border-radius: 10px;
+  animation: aparecer 0.2s ease;
+}
+
+@keyframes aparecer {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .outro {
@@ -75,6 +102,7 @@ body {
   align-self: flex-end;
 }
 
+/* INPUT */
 #inputArea {
   display: flex;
   padding: 10px;
@@ -101,18 +129,24 @@ body {
 
 <body>
 
+<!-- LOGIN -->
 <div id="login">
-  <h2>Digite seu nome</h2>
+  <h2>ENet</h2>
   <input id="nomeInput" placeholder="Seu nome">
   <button onclick="entrar()">Entrar</button>
 </div>
 
+<!-- CHAT -->
 <div id="chat">
-  <div id="topo">ENet</div>
+  <div id="topo">
+    ENet
+    <button id="trocar" onclick="trocarNome()">Trocar</button>
+  </div>
+
   <div id="messages"></div>
 
   <div id="inputArea">
-    <input id="msgInput" placeholder="Mensagem">
+    <input id="msgInput" placeholder="Mensagem" onkeypress="if(event.key==='Enter') enviar()">
     <button id="sendBtn" onclick="enviar()">Enviar</button>
   </div>
 </div>
@@ -150,12 +184,16 @@ window.entrar = function() {
   if (!input) return alert("Digite um nome");
 
   nome = input;
-
-  // SALVA
   localStorage.setItem("nome", nome);
 
   document.getElementById("login").style.display = "none";
   document.getElementById("chat").style.display = "flex";
+}
+
+// TROCAR NOME
+window.trocarNome = function() {
+  localStorage.removeItem("nome");
+  location.reload();
 }
 
 // ENVIAR
