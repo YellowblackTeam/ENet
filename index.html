@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Público</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #111;
+  color: white;
+}
+
+#login, #chat {
+  display: none;
+  padding: 20px;
+}
+
+input, button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+}
+
+button {
+  background: yellow;
+  color: black;
+  font-weight: bold;
+}
+
+#messages {
+  height: 60vh;
+  overflow-y: auto;
+  background: #222;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.msg {
+  margin: 5px 0;
+}
+
+.nome {
+  color: yellow;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="login">
+  <h2>Digite seu nome</h2>
+  <input id="nomeInput" placeholder="Seu nome">
+  <button onclick="entrar()">Entrar</button>
+</div>
+
+<div id="chat">
+  <h2>Chat Público</h2>
+  <div id="messages"></div>
+  <input id="msgInput" placeholder="Digite uma mensagem">
+  <button onclick="enviar()">Enviar</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// SUA CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyALnSsmtPEeo2o_GaSwG_EVO5ltQ8tYGek",
+  authDomain: "enet-1e00f.firebaseapp.com",
+  projectId: "enet-1e00f",
+  storageBucket: "enet-1e00f.firebasestorage.app",
+  messagingSenderId: "146977440591",
+  appId: "1:146977440591:web:d34469c4bb2005d0777b3a",
+  measurementId: "G-80YF5S8PL2"
+};
+
+// INIT
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// VARS
+let nome = "";
+const messagesRef = ref(db, "chat");
+
+// LOGIN
+window.entrar = function() {
+  const input = document.getElementById("nomeInput").value.trim();
+  if (!input) return alert("Digite um nome!");
+
+  nome = input;
+
+  document.getElementById("login").style.display = "none";
+  document.getElementById("chat").style.display = "block";
+}
+
+// ENVIAR MSG
+window.enviar = function() {
+  const msgInput = document.getElementById("msgInput");
+  const texto = msgInput.value.trim();
+  if (!texto) return;
+
+  push(messagesRef, {
+    nome: nome,
+    texto: texto
+  });
+
+  msgInput.value = "";
+}
+
+// RECEBER MSG
+onChildAdded(messagesRef, (data) => {
+  const msg = data.val();
+
+  const div = document.createElement("div");
+  div.className = "msg";
+  div.innerHTML = `<span class="nome">${msg.nome}:</span> ${msg.texto}`;
+
+  document.getElementById("messages").appendChild(div);
+
+  // auto scroll
+  const box = document.getElementById("messages");
+  box.scrollTop = box.scrollHeight;
+});
+
+// MOSTRAR LOGIN
+document.getElementById("login").style.display = "block";
+
+</script>
+
+</body>
+</html>
