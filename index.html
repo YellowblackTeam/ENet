@@ -3,50 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat Público</title>
+<title>Chat</title>
 
 <style>
 body {
   margin: 0;
   font-family: Arial;
-  background: #111;
-  color: white;
+  background: #ece5dd;
 }
 
-#login, #chat {
-  display: none;
+#login {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
   padding: 20px;
 }
 
-input, button {
-  width: 100%;
+#login input {
   padding: 15px;
-  margin-top: 10px;
-  border: none;
   border-radius: 10px;
+  border: 1px solid #ccc;
 }
 
-button {
-  background: yellow;
-  color: black;
+#login button {
+  margin-top: 10px;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #25d366;
+  color: white;
+  font-weight: bold;
+}
+
+#chat {
+  display: none;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#topo {
+  background: #075e54;
+  color: white;
+  padding: 15px;
   font-weight: bold;
 }
 
 #messages {
-  height: 60vh;
+  flex: 1;
   overflow-y: auto;
-  background: #222;
   padding: 10px;
-  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .msg {
+  max-width: 70%;
+  padding: 10px;
   margin: 5px 0;
+  border-radius: 10px;
 }
 
-.nome {
-  color: yellow;
-  font-weight: bold;
+.outro {
+  background: white;
+  align-self: flex-start;
+}
+
+.eu {
+  background: #dcf8c6;
+  align-self: flex-end;
+}
+
+#inputArea {
+  display: flex;
+  padding: 10px;
+  background: #f0f0f0;
+}
+
+#msgInput {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+}
+
+#sendBtn {
+  margin-left: 10px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  background: #25d366;
+  color: white;
 }
 </style>
 </head>
@@ -60,78 +108,90 @@ button {
 </div>
 
 <div id="chat">
-  <h2>Chat Público</h2>
+  <div id="topo">Chat Público</div>
   <div id="messages"></div>
-  <input id="msgInput" placeholder="Digite uma mensagem">
-  <button onclick="enviar()">Enviar</button>
+
+  <div id="inputArea">
+    <input id="msgInput" placeholder="Mensagem">
+    <button id="sendBtn" onclick="enviar()">Enviar</button>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// SUA CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyALnSsmtPEeo2o_GaSwG_EVO5ltQ8tYGek",
   authDomain: "enet-1e00f.firebaseapp.com",
   projectId: "enet-1e00f",
   storageBucket: "enet-1e00f.firebasestorage.app",
   messagingSenderId: "146977440591",
-  appId: "1:146977440591:web:d34469c4bb2005d0777b3a",
-  measurementId: "G-80YF5S8PL2"
+  appId: "1:146977440591:web:d34469c4bb2005d0777b3a"
 };
 
-// INIT
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// VARS
-let nome = "";
-const messagesRef = ref(db, "chat");
+let nome = localStorage.getItem("nome") || "";
+const chatRef = ref(db, "chat");
 
-// LOGIN
+// AUTO LOGIN
+if (nome) {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("chat").style.display = "flex";
+} else {
+  document.getElementById("login").style.display = "flex";
+}
+
+// ENTRAR
 window.entrar = function() {
   const input = document.getElementById("nomeInput").value.trim();
-  if (!input) return alert("Digite um nome!");
+  if (!input) return alert("Digite um nome");
 
   nome = input;
 
+  // SALVA
+  localStorage.setItem("nome", nome);
+
   document.getElementById("login").style.display = "none";
-  document.getElementById("chat").style.display = "block";
+  document.getElementById("chat").style.display = "flex";
 }
 
-// ENVIAR MSG
+// ENVIAR
 window.enviar = function() {
-  const msgInput = document.getElementById("msgInput");
-  const texto = msgInput.value.trim();
+  const input = document.getElementById("msgInput");
+  const texto = input.value.trim();
   if (!texto) return;
 
-  push(messagesRef, {
+  push(chatRef, {
     nome: nome,
     texto: texto
   });
 
-  msgInput.value = "";
+  input.value = "";
 }
 
-// RECEBER MSG
-onChildAdded(messagesRef, (data) => {
+// RECEBER
+onChildAdded(chatRef, (data) => {
   const msg = data.val();
 
   const div = document.createElement("div");
-  div.className = "msg";
-  div.innerHTML = `<span class="nome">${msg.nome}:</span> ${msg.texto}`;
+  div.classList.add("msg");
 
-  document.getElementById("messages").appendChild(div);
+  if (msg.nome === nome) {
+    div.classList.add("eu");
+  } else {
+    div.classList.add("outro");
+  }
 
-  // auto scroll
+  div.innerHTML = `<b>${msg.nome}</b><br>${msg.texto}`;
+
   const box = document.getElementById("messages");
+  box.appendChild(div);
+
   box.scrollTop = box.scrollHeight;
 });
-
-// MOSTRAR LOGIN
-document.getElementById("login").style.display = "block";
-
 </script>
 
 </body>
